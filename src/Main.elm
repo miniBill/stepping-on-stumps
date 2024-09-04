@@ -104,6 +104,7 @@ innerView visited model =
         , iif <| Html.Attributes.style "padding" "8px"
         ]
         [ Html.node "style" [] [ Html.text style ]
+        , Html.text ("Total reachable from here: " ++ String.fromInt (reachableCount model))
         , Html.div [] [ viewPosition model ]
         , if
             Set.member (toString model) visited
@@ -121,6 +122,31 @@ innerView visited model =
                     children
                 )
         ]
+
+
+reachableCount : Model -> Int
+reachableCount model =
+    let
+        go visited queue =
+            case queue of
+                [] ->
+                    Set.size visited
+
+                [] :: tail ->
+                    go visited tail
+
+                (head :: tail) :: others ->
+                    if Set.member (toString head) visited then
+                        go visited (tail :: others)
+
+                    else
+                        let
+                            q =
+                                reachable head
+                        in
+                        go (Set.insert (toString head) visited) (q :: tail :: others)
+    in
+    go Set.empty [ [ model ] ]
 
 
 toString : Model -> String
@@ -286,7 +312,7 @@ getPosition turn board =
         F
 
     else if board.g == Just turn then
-        B
+        G
 
     else
         Debug.todo "BAD MODEL"
