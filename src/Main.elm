@@ -76,19 +76,36 @@ view model =
 
 innerView : Set String -> Model -> Html Msg
 innerView visited model =
+    let
+        children : List Model
+        children =
+            reachable model
+
+        iif attr =
+            if
+                List.length children
+                    <= 1
+                    || (Set.member (toString model) visited
+                            || (Set.size visited > 1 && List.length children > 1)
+                       )
+            then
+                Html.Attributes.class "-"
+
+            else
+                attr
+    in
     Html.div
         [ Html.Attributes.style "display" "flex"
         , Html.Attributes.style "flex-direction" "column"
         , Html.Attributes.style "gap" "8px"
+
+        --
+        , iif <| Html.Attributes.style "border" "1px solid black"
+        , iif <| Html.Attributes.style "padding" "8px"
         ]
         [ Html.node "style" [] [ Html.text style ]
         , Html.div [] [ viewPosition model ]
-        , let
-            children : List Model
-            children =
-                reachable model
-          in
-          if
+        , if
             Set.member (toString model) visited
                 || (Set.size visited > 1 && List.length children > 1)
           then
